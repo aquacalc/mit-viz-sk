@@ -12,11 +12,11 @@
 	<a href="https://vis-society.github.io/" target="_blank">online course here</a>
 </p>
 
-<h2>Most popular posts</h2>
+<h2>Most visited posts</h2>
 <div class="projects">
 	{#each projects.slice(0, 3) as project}
 		<!-- {#each projects.filter((p, idx) => idx < 3) as project} -->
-		<Project {project} />
+		<Project {project} hLevel={3} />
 	{/each}
 </div>
 

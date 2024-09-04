@@ -70,21 +70,22 @@ if (localStorage.colorScheme) {
 
 // const ARE_WE_HOME = document.documentElement.classList.contains("home");
 
-for (let p of pages) {
-	let url = p.url;
-	let title = p.title;
+// for (let p of pages) {
+// 	let url = p.url;
+// 	let title = p.title;
 
-	// Create link and add it to nav
-	// url = !ARE_WE_HOME && !url.startsWith("http") ? "../" + url : url;
-	// nav.insertAdjacentHTML("beforeend", `<a href="${url}">${title}</a>`);
+// 	// Create link and add it to nav
+// 	// url = !ARE_WE_HOME && !url.startsWith("http") ? "../" + url : url;
+// 	// nav.insertAdjacentHTML("beforeend", `<a href="${url}">${title}</a>`);
 
-	let a = document.createElement('a');
-	a.href = url;
-	a.textContent = title;
-	nav.append(a);
+// 	let a = document.createElement('a');
+// 	a.href = url;
+// 	a.textContent = title;
+  
+// 	nav.append(a);
 
-	a.host === location.host && a.pathname === location.pathname ? (a.className = 'current') : null;
-}
+// 	a.host === location.host && a.pathname === location.pathname ? (a.className = 'current') : null;
+// }
 
 // const navLinks = $$('nav a');
 

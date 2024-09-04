@@ -14,7 +14,7 @@
 
 <div class="projects">
 	{#each projects as project}
-		<Project {project} />
+		<Project {project}/>
 		<!-- {#each projects as { title, description, image }} -->
 		<!-- <article>
 			<h2>{title}</h2>
