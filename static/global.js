@@ -26,47 +26,47 @@
 
 // This means that if we did want to add subpages (e.g. projects/viz/),
 // we would have to do some work to handle this, but let’s cross that bridge when we get to it.
-let pages = [
-	{ url: './', title: 'Home' },
-	{ url: 'projects', title: 'Projects' },
-	{ url: 'contact', title: 'Contact' }
-	// add the rest of your pages here
-];
+// let pages = [
+// 	{ url: './', title: 'Home' },
+// 	{ url: 'projects', title: 'Projects' },
+// 	{ url: 'contact', title: 'Contact' }
+// 	// add the rest of your pages here
+// ];
 
 // Create NAV element
-let nav = document.createElement('nav');
-document.body.prepend(nav);
+// let nav = document.createElement('nav');
+// document.body.prepend(nav);
 
 // Create SELECT element for light/dark theme
-document.body.insertAdjacentHTML(
-	'afterbegin',
-	`<label class="color-scheme">
-  Theme:
-		<select id='select-theme'>
-			<option value='light dark'>Automatic</option>
-			<option value='light'>light</option>
-			<option value='dark'>dark</option>
-		</select>
-	</label>`
-);
+// document.body.insertAdjacentHTML(
+// 	'afterbegin',
+// 	`<label class="color-scheme">
+//   Theme:
+// 		<select id='select-theme'>
+// 			<option value='light dark'>Automatic</option>
+// 			<option value='light'>light</option>
+// 			<option value='dark'>dark</option>
+// 		</select>
+// 	</label>`
+// );
 
 // When ∆ theme...
 //  (1) set new theme in LS
 //  (2) ∆ color-scheme property
-const selectTheme = document.querySelector('#select-theme');
+// const selectTheme = document.querySelector('#select-theme');
 
-selectTheme.addEventListener('change', function () {
-	// console.log(`Change to ${this.value} (${e.target.value})`);
-	localStorage.setItem('colorScheme', this.value);
-	document.documentElement.style.setProperty('color-scheme', this.value);
-	// document.documentElement.style.setProperty("color-scheme", localStorage.getItem("colorScheme"));
-});
+// selectTheme.addEventListener('change', function () {
+// 	// console.log(`Change to ${this.value} (${e.target.value})`);
+// 	localStorage.setItem('colorScheme', this.value);
+// 	document.documentElement.style.setProperty('color-scheme', this.value);
+// 	// document.documentElement.style.setProperty("color-scheme", localStorage.getItem("colorScheme"));
+// });
 
-if (localStorage.colorScheme) {
-	console.log(`Ima: ${localStorage.colorScheme}`);
-	document.documentElement.style.setProperty('color-scheme', localStorage.colorScheme);
-	selectTheme.value = localStorage.colorScheme;
-}
+// if (localStorage.colorScheme) {
+// 	console.log(`Ima: ${localStorage.colorScheme}`);
+// 	document.documentElement.style.setProperty('color-scheme', localStorage.colorScheme);
+// 	selectTheme.value = localStorage.colorScheme;
+// }
 
 // const ARE_WE_HOME = document.documentElement.classList.contains("home");
 

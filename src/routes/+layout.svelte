@@ -2,9 +2,35 @@
 	import { page } from '$app/stores';
 	import '$lib/styles/styles.css';
 
-	// $: console.log(`PAGE: `, $page.url.pathname);
 	$: currentPage = $page.url.pathname;
+
+	// let currentTheme = 'light dark';
+
+	let localStorage = globalThis.localStorage ?? {};
+
+	let currentTheme = localStorage.colorScheme ?? 'light dark';
+
+	let root = globalThis?.document?.documentElement;
+	$: root?.style.setProperty('color-scheme', currentTheme);
+  
+  $: localStorage.colorScheme = currentTheme;
+
+
+	const handleTheme = (e) => {
+		currentTheme = e.target.value;
+		localStorage.setItem('colorScheme', e.target.value);
+		// document.documentElement.style.setProperty('color-scheme', e.target.value);
+	};
 </script>
+
+<label class="color-scheme">
+	Theme:
+	<select id="select-theme" bind:value={currentTheme} onchange={handleTheme}>
+		<option value="light dark">Automatic</option>
+		<option value="light">light</option>
+		<option value="dark">dark</option>
+	</select>
+</label>
 
 <nav>
 	<ul>
@@ -74,5 +100,21 @@
 		background-color: color-mix(in oklch, var(--color-accent), canvas 85%);
 		border-top-left-radius: 8px;
 		border-top-right-radius: 8px;
+	}
+
+	label {
+		display: grid;
+		grid-template-columns: subgrid;
+		grid-column: 1 / -1;
+	}
+
+	select {
+		font-size: 80%;
+	}
+
+	.color-scheme {
+		display: flex;
+		gap: 0.5em;
+		justify-content: end;
 	}
 </style>

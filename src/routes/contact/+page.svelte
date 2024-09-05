@@ -6,7 +6,6 @@
 	<title>Contact me</title>
 </svelte:head>
 
-
 <h1>Contact</h1>
 
 <!-- mailto... https://github.com/brave/brave-browser/issues/20555 -->
@@ -36,3 +35,11 @@
 
 	<a href="mailto:iquacalc@gmail.com">Email Us</a>
 </form>
+
+<style>
+	label {
+		display: grid;
+		grid-template-columns: subgrid;
+		grid-column: 1 / -1;
+	}
+</style>

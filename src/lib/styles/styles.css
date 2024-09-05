@@ -121,23 +121,18 @@ button {
 }
 
 /* Apply margin-block to the labels to add spacing before and after them */
-label {
+/* label {
 	display: grid;
 	grid-template-columns: subgrid;
 	grid-column: 1 / -1;
-	/* position: absolute;
-  top: 1rem;
-  right: 1rem; */
-	/* display: contents; */
-	/* margin-block: 20px 40px; */
-}
+} */
 
-select {
+/* select {
 	font-size: 80%;
-}
+} */
 
-.color-scheme {
+/* .color-scheme {
 	display: flex;
 	gap: 0.5em;
 	justify-content: end;
-}
+} */

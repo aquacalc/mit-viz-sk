@@ -3,11 +3,17 @@
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
-    <!-- <link rel="stylesheet" href="./styles/styles.css"> -->
-    <script src="global.js" defer></script>
+		<!-- <link rel="stylesheet" href="./styles/styles.css"> -->
+		<script src="global.js" defer></script>
+		<script>
+			let root = document.documentElement;
+			let currentTheme = localStorage.currentTheme ?? 'light dark';
+			root.style.setProperty('color-scheme', currentTheme);
+		</script>
+
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		%sveltekit.head%
-    <title>MIT Viz Course</title>
+		<title>MIT Viz Course</title>
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
