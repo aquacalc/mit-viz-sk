@@ -14,10 +14,9 @@
 	<title>MIT Viz - Home</title>
 </svelte:head>
 
-<h1>MIT Viz & Society 2024</h1>
-<p>
-	<a href="https://vis-society.github.io/" target="_blank">online course here</a>
-</p>
+<h1><a href="https://vis-society.github.io/" target="_blank">MIT Viz & Society 2024</a></h1>
+
+<hr />
 
 <h2>Most visited posts</h2>
 <div class="projects">
@@ -41,7 +40,7 @@
 
 <!-- <hr /> -->
 
-<section class='git-hub-data'>
+<section class="git-hub-data">
 	<h3>Plaque-tournante de Git de {data.data.name}</h3>
 	<dl>
 		<dt>Following</dt>
@@ -84,30 +83,30 @@
 
 	dt {
 		grid-row: 1;
-    padding-left: 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 400;
-    text-transform: uppercase;
-    color: #aaa;
+		padding-left: 0.5rem;
+		font-size: 0.8rem;
+		font-weight: 400;
+		text-transform: uppercase;
+		color: #aaa;
 	}
 
 	dd {
 		grid-row: 2;
 		margin-left: 0.5em;
-    font-size: 2rem;
-    font-weight: 100;
-    color: #aaeeeeee;
+		font-size: 2rem;
+		font-weight: 100;
+		color: #aaeeeeee;
 		/* margin-bottom: 1em; */
-    /* justify-content: left; */
+		/* justify-content: left; */
 	}
 
-  .git-hub-data {
-    border: 0.5px solid #555;
-    width: 80%;
-    margin: 0 auto;
-  }
-  .git-hub-data h3 {
-    padding-left: 0.5rem;
-    font-weight: 200;
-  }
+	.git-hub-data {
+		border: 0.5px solid #555;
+		width: 80%;
+		margin: 0 auto;
+	}
+	.git-hub-data h3 {
+		padding-left: 0.5rem;
+		font-weight: 200;
+	}
 </style>

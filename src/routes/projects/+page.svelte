@@ -3,6 +3,7 @@
 
 	import Project from '$lib/components/Project.svelte';
 
+  import Pie from '$lib/components/d3js/Pie.svelte';
 	// console.log('--> ', projects)
 </script>
 
@@ -11,6 +12,8 @@
 </svelte:head>
 
 <h1>{projects.length} Projects</h1>
+
+<Pie />
 
 <div class="projects">
 	{#each projects as project}
