@@ -19,15 +19,6 @@
 
 	// -------------- //
 
-	// let myPieData = [
-	// 	{ value: 1, label: 'apples' },
-	// 	{ value: 2, label: 'oranges' },
-	// 	{ value: 3, label: 'mangos' },
-	// 	{ value: 4, label: 'pears' },
-	// 	{ value: 5, label: 'limes' },
-	// 	{ value: 5, label: 'cherries' }
-	// ];
-
 	// const tot = myPieData.reduce((sum, next) => sum + next, 0);
 	$: tot = myPieData.reduce((sum, next) => sum + next.value, 0);
 
@@ -56,7 +47,14 @@
 	// const myFills = ['green', 'yellow', 'red'];
 	let myFills = d3.scaleOrdinal(d3.schemeTableau10);
 
-	const handlePathClick = (e) => alert(`e.target.name = ${e.target.name}`);
+	const toggleWedge = (idx, e) => {
+		// console.log(`${e.target.name}: ${idx}`, e.target);
+
+		if (!e.key || e.key === 'Enter') {
+			selectedIndex = selectedIndex === idx ? -1 : idx;
+			// selectedIndex = idx;
+		}
+	};
 
 	// ************** //
 	// let angle = 0;
@@ -96,11 +94,18 @@
 			<!-- <path d={myPath} fill={myFills(idx)} /> -->
 			<!-- </g> -->
 			<g transform={`translate(10,0) rotate(${myEndAngle * (180 / Math.PI)})`}>
+				<!-- on:click={() => (selectedIndex = selectedIndex === idx ? -1 : idx)} -->
 				<path
 					d={myPath}
 					fill={myFills(idx)}
 					class:selected={selectedIndex === idx}
-					on:click={() => (selectedIndex = selectedIndex === idx ? -1 : idx)}
+					on:click={(e) => toggleWedge(idx, e)}
+					tabindex="0"
+					role="button"
+					aria-label={`Slice ${idx} of pie chart.`}
+					style="
+	          --start-angle: {arcsArray[idx]?.startAngle}rad;
+	          --end-angle: {arcsArray[idx]?.endAngle}rad;"
 				/>
 			</g>
 		{/each}
@@ -152,11 +157,11 @@
     fill: yellow;
   } */
 
-	svg:has(path:hover) {
+	svg:has(path:hover, path:focus-visible) {
 		cursor: pointer;
 		opacity: 100%;
 
-		path:not(:hover) {
+		path:not(:hover, focus-visible) {
 			opacity: 30%;
 		}
 	}
@@ -164,6 +169,19 @@
 	path {
 		opacity: 0.65;
 		transition: 300ms;
+		outline: none;
+		/* 
+      ...in the CSS we can calculate the difference, 
+      and the angle to get to the midpoint of the arc 
+    */
+		--angle: calc(var(--end-angle) - var(--start-angle));
+		--mid-angle: calc(var(--start-angle) + var(--angle) / 2);
+
+		&.selected {
+			transform: rotate(var(--mid-angle)) translateY(-6px) scale(1.1) rotate(calc(-1 * var(--mid-angle)));
+		}
+
+		transform: rotate(var(--mid-angle)) translateY(0) rotate(calc(-1 * var(--mid-angle)));
 	}
 
 	.selected {

@@ -40,7 +40,11 @@
 		myPieData = x.map(([label, value]) => ({ label, value })).sort((a, b) => a.label - b.label);
 	}
 
-	$: selectedYear = selectedYearIndex > -1 ? myPieData[selectedYearIndex]?.label : null;
+	$: {
+		selectedYear = selectedYearIndex > -1 ? myPieData[selectedYearIndex]?.label : null;
+		filteredByYear = projects.filter((d) => d.year === selectedYear);
+    // console.log(`selectedYear: ${selectedYear} -- `, filteredByYear)
+	}
 </script>
 
 <svelte:head>
