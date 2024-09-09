@@ -118,10 +118,14 @@
 		<!-- {#each myPieData.sort((a, b) => b.label - a.label) as { value, label }, idx} -->
 		<!-- <li style="color: {myFills(myPieData.length - 1 - idx)}"> -->
 		{#each myPieData as { value, label }, idx}
-			<li style="color: {myFills(idx)}">
-				<span class="swatch" class:selected={selectedIndex === idx}>
-					{label} ({value})
+			<li style="color: {myFills(idx)}" class:selected={selectedIndex === idx}>
+				<span
+					class="swatch"
+					class:selected={selectedIndex === idx}
+					style="background-color: {myFills(idx)}"
+				>
 				</span>
+				{label} ({value})
 			</li>
 		{/each}
 	</ul>
@@ -150,8 +154,8 @@
 
 	svg:has(path:hover) {
 		cursor: pointer;
-    opacity: 100%;
-    
+		opacity: 100%;
+
 		path:not(:hover) {
 			opacity: 30%;
 		}
@@ -164,6 +168,7 @@
 
 	.selected {
 		--color: oklch(60% 45% 0) !important;
+		color: oklch(60% 45% 0) !important;
 		opacity: 1;
 
 		&:is(path) {
@@ -171,9 +176,15 @@
 		}
 
 		&:is(span) {
-			color: var(--color);
+			background-color: oklch(60% 45% 0) !important;
+			border: 1px solid #aaa;
 			font-weight: 600;
-			/* text-decoration: dashed; */
+			opacity: 100%;
+		}
+
+		&:is(li) {
+			/* --color: oklch(60% 45% 0) !important; */
+			font-weight: 600;
 		}
 	}
 
@@ -198,7 +209,12 @@
 	}
 
 	.swatch {
+		height: 20px;
+		width: 20px;
+		border-radius: 50%;
+		opacity: 0.75;
 		/* aspect-ratio: 1 / 1; */
+		/* background-color: #fff; */
 	}
 
 	#range-angle {

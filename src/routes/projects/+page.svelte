@@ -9,8 +9,17 @@
 
 	let filteredProjects = [];
 	let filteredProjectsAll = [];
+	let filteredByYear = [];
 	let x = [];
 	let myPieData = [];
+
+	// "Selecting a wedge doesn’t really do that much right now.
+	// However, the ability to select a wedge becomes truly powerful
+	// when handled by the parent page."
+	// Step 5: https://vis-society.github.io/labs/6/
+	let selectedYearIndex = -1;
+
+	let selectedYear;
 
 	$: {
 		// Filter TITLE
@@ -30,6 +39,8 @@
 
 		myPieData = x.map(([label, value]) => ({ label, value })).sort((a, b) => a.label - b.label);
 	}
+
+	$: selectedYear = selectedYearIndex > -1 ? myPieData[selectedYearIndex]?.label : null;
 </script>
 
 <svelte:head>
@@ -55,7 +66,8 @@
 </label>
 
 {#if filteredProjectsAll.length > 0}
-	<Pie {myPieData} />
+	<Pie {myPieData} bind:selectedIndex={selectedYearIndex} />
+	<!-- <h3>(selectedYearIndex = {selectedYearIndex} =&gt; {selectedYear})</h3> -->
 {:else}
 	<div id="sorry">
 		<h2>Sorry! No articles include "{query}"</h2>
