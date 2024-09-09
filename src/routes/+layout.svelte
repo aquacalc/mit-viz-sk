@@ -38,7 +38,7 @@
 			<a class={currentPage === '/' ? 'current' : null} href="/">Home</a>
 		</li>
 		<li>
-			<a class={currentPage === 'mit-viz-sk//projects' ? 'current' : null} href="/projects">Projects</a>
+			<a class={currentPage === 'mit-viz-sk/projects' ? 'current' : null} href="/projects">Projects</a>
 		</li>
 		<li>
 			<a class={currentPage === '/contact' ? 'current' : null} href="/contact"> Contact </a>
