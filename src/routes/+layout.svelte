@@ -1,6 +1,13 @@
 <script>
 	import { page } from '$app/stores';
+
+	// see: https://joshcollinsworth.com/blog/sveltekit-page-transitions#the-final-code
+	import { fade } from 'svelte/transition';
+	import { cubicIn, cubicOut } from 'svelte/easing';
+
 	import '$lib/styles/styles.css';
+
+	export let data;
 
 	$: currentPage = $page.url.pathname;
 
@@ -12,9 +19,8 @@
 
 	let root = globalThis?.document?.documentElement;
 	$: root?.style.setProperty('color-scheme', currentTheme);
-  
-  $: localStorage.colorScheme = currentTheme;
 
+	$: localStorage.colorScheme = currentTheme;
 
 	const handleTheme = (e) => {
 		currentTheme = e.target.value;
@@ -46,7 +52,15 @@
 	</ul>
 </nav>
 
-<slot />
+{#key data.pathname}
+	<div in:fade={{ duration: 300, delay: 400 }} out:fade={{ duration: 300 }}>
+	<!-- <div
+		in:fade={{ easing: cubicOut, duration: 300, delay: 400 }}
+		out:fade={{ easing: cubicIn, duration: 300 }}
+	> -->
+		<slot />
+	</div>
+{/key}
 
 <style>
 	nav {
