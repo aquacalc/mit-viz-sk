@@ -3,13 +3,17 @@
 	export let linesMedian;
 	export let linesMax;
 	export let numFiles;
-	console.log(`DATA: `, data);
+
+	// $: console.log(`DATA: `, data);
+
+	// Compile Github stats
+
 </script>
 
 <section class="git-hub-data">
 	<!-- <h3>Codebase stats for Commit No. {data[0].commit}</h3> -->
 	<dl>
-		<dt>Total <abbr title="Lines of code">LOC</abbr></dt>
+		<dt>Total <abbr title="Lines of code">LOC ∆</abbr></dt>
 		<dd>{data.length}</dd>
 
 		<dt>Lines <abbr title="Median lines of code">Median</abbr></dt>
@@ -52,7 +56,7 @@
 		margin-left: 0.5em;
 		font-size: 2rem;
 		font-weight: 100;
-		color: #aaeeeeee;
+		/* color: #aaeeeeee; */
 	}
 
 	.git-hub-data {
