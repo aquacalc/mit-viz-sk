@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import * as d3 from 'd3';
+	import { computePosition, autoPlacement, offset } from '@floating-ui/dom';
 
 	import Stats from '$lib/Stats.svelte';
 
@@ -267,23 +268,28 @@
 	$: work_plot = commits.map((d) => ({ ...d, x: d.datetime, y: d.hourFrac }));
 
 	// $: console.log(commits);
-	$: console.log('work_plot: ', work_plot);
+	// $: console.log('work_plot: ', work_plot);
 
 	// $: commits.map((c) => console.log(`??? ${c.datetime}: ${c.hourFrac}, ${yScale(c.hourFrac)}`));
 	// $: commits.map((c) => console.log(`??? ${c.datetime}, ${xScale(c.datetime)}`));
 
 	// [NB] Sorted by xScale-d datetime to render line
-	$: work_plot_sorted = commits.map((d) => ({ x: xScale(d.datetime), y: yScale(d.hourFrac) })).sort((a, b) => xScale(a.x) - xScale(b.x));
+	$: work_plot_sorted = commits
+		.map((d) => ({ x: xScale(d.datetime), y: yScale(d.hourFrac) }))
+		.sort((a, b) => xScale(a.x) - xScale(b.x));
 	// $: console.log('work_plot_sorted: ', work_plot_sorted);
 
 	// TOOLTIP
+	let cursor = { x: 0, y: 0 };
+	let commitTooltip;
+
 	let hoveredIndex = -1;
-	// $: hoveredCommit = commits[hoveredIndex] ?? hoveredCommit ?? {};
+	$: hoveredCommit = commits[hoveredIndex] ?? hoveredCommit ?? {};
 
 	// [NB] NOT sorted by xScale-d datetime to populate tooltip
-	$: hoveredCommit = work_plot[hoveredIndex] ?? {};
+	// $: hoveredCommit = work_plot[hoveredIndex] ?? {};
 
-	$: console.log(`hoveredCommit[${hoveredIndex}] = `, hoveredCommit);
+	// $: console.log(`hoveredCommit[${hoveredIndex}] = `, hoveredCommit);
 
 	// end VIZ end //
 	// *** VIZ *** //
@@ -295,7 +301,15 @@
 <Stats {data} {linesMedian} {linesMax} {numFiles} />
 
 <div class="">
-	<dl id="commit-tooltip" class="info tooltip">
+	<dl
+		bind:this={commitTooltip}
+		id="commit-tooltip"
+		class="info tooltip"
+		hidden={hoveredIndex === -1}
+		style="top: {cursor.y}px; left: {cursor.x}px"
+	>
+		<!-- <dl class="info" hidden={hoveredIndex === -1}> -->
+
 		<dt>Commit</dt>
 		<dd><a href={hoveredCommit.url} target="_blank">{hoveredCommit.id}</a></dd>
 
@@ -339,7 +353,10 @@
 					cy={yScale(c.y)}
 					r={5}
 					fill="steelblue"
-					on:mouseenter={(evt) => (hoveredIndex = index)}
+					on:mouseenter={(evt) => {
+						hoveredIndex = index;
+						cursor = { x: evt.x, y: evt.y };
+					}}
 					on:mouseleave={(evt) => (hoveredIndex = -1)}
 					aria-roledescription="tooltip"
 				/>
@@ -373,6 +390,8 @@
 		overflow: visible;
 		/* border: 1px solid gray; */
 		/* background: rgb(219, 219, 191); */
+		/* background-color: #1f1f1f; */
+		/* border-radius: 12px; */
 		margin: 30px;
 	}
 
@@ -382,6 +401,22 @@
 
 	dl.info {
 		display: grid;
+		grid-template-columns: 1fr 3fr;
+		background-color: oklch(100% 0% 0 / 80%);
+		border: 0.5px solid #888;
+		border-radius: 8px;
+		backdrop-filter: blur(2px);
+		/* max-width: 20%; */
+		padding: 8px;
+		box-shadow: 5px 5px #696969;
+
+		transition-duration: 500ms;
+		transition-property: opacity, visibility;
+
+		&[hidden]:not(:hover, :focus-within) {
+			opacity: 0;
+			visibility: hidden;
+		}
 	}
 
 	.tooltip {
