@@ -281,7 +281,27 @@
 
 	// TOOLTIP
 	let cursor = { x: 0, y: 0 };
+
 	let commitTooltip;
+	let tooltipPosition = { x: 0, y: 0 };
+
+	const dotInteraction = async (evt, idx) => {
+		let hoveredDot = evt.target;
+
+		if (evt.type === 'mouseenter' || evt.type === 'focus') {
+			hoveredIndex = idx;
+			cursor = { x: evt.x, y: evt.y };
+			tooltipPosition = await computePosition(hoveredDot, commitTooltip, {
+				strategy: 'fixed', // because we use position: fixed
+				middleware: [
+					offset(5), // spacing from tooltip to dot
+					autoPlacement() // see https://floating-ui.com/docs/autoplacement
+				]
+			});
+		} else if (evt.type === 'mouseleave' || evt.type === 'blur') {
+			hoveredIndex = -1;
+		}
+	};
 
 	let hoveredIndex = -1;
 	$: hoveredCommit = commits[hoveredIndex] ?? hoveredCommit ?? {};
@@ -306,7 +326,7 @@
 		id="commit-tooltip"
 		class="info tooltip"
 		hidden={hoveredIndex === -1}
-		style="top: {cursor.y}px; left: {cursor.x}px"
+		style="top: {tooltipPosition.y}px; left: {tooltipPosition.x}px"
 	>
 		<!-- <dl class="info" hidden={hoveredIndex === -1}> -->
 
@@ -326,6 +346,8 @@
 		 <dd>{hoveredCommit.time}</dd> -->
 	</dl>
 
+	<!-- <h1>--| {cursor.y} | {yScale.invert(cursor.y)}</h1> -->
+
 	<svg viewBox="0 0 {width} {height}">
 		<g class="gridlines" transform="translate({usableArea}, 0)" bind:this={xAxisGridlines} />
 		<g class="gridlines" transform="translate({usableArea.left}, 0)" bind:this={yAxisGridlines} />
@@ -333,32 +355,47 @@
 		<g transform="translate(0, {usableArea.bottom})" bind:this={xAxis} />
 		<g transform="translate({usableArea.left}, 0)" bind:this={yAxis} />
 
-		<path
+		<!-- <path
 			d={lineGenerator(work_plot_sorted)}
 			style="fill: none; stroke: orange; stroke-width: 3;"
-		/>
+		/> -->
 
 		<g class="dots">
-			{#each work_plot as c, index}
+			{#each work_plot as c, idx}
+				<!-- <g transform="translate({xScale(c.x)}, {yScale(c.y) - 12})">
+					<text dominant-baseline="middle" text-anchor="middle" class="label"
+						>{idx} [{Math.round(xScale(c.x))}, {Math.round(yScale(c.y))}]: {Math.round(c.y * 100) /
+							100}</text
+					>
+				</g> -->
 				<g transform="translate({xScale(c.x)}, {yScale(c.y) - 12})">
 					<text dominant-baseline="middle" text-anchor="middle" class="label"
-						>{index} [{Math.round(xScale(c.x))}, {Math.round(yScale(c.y))}]: {Math.round(
-							c.y * 100
-						) / 100}</text
+						>{commits[idx]?.totalLines}</text
 					>
 				</g>
+
+				<line
+					x1={xScale(c.x)}
+					y1={yScale(c.y)}
+					x2={xScale(c.x)}
+					y2={yScale(24)}
+					stroke="orange"
+					stroke-width={1}
+				/>
 
 				<circle
 					cx={xScale(c.x)}
 					cy={yScale(c.y)}
 					r={5}
 					fill="steelblue"
-					on:mouseenter={(evt) => {
-						hoveredIndex = index;
-						cursor = { x: evt.x, y: evt.y };
-					}}
-					on:mouseleave={(evt) => (hoveredIndex = -1)}
-					aria-roledescription="tooltip"
+					on:mouseenter={(evt) => dotInteraction(evt, idx)}
+					on:mouseleave={(evt) => dotInteraction(evt, idx)}
+					on:mousefocus={(evt) => dotInteraction(evt, idx)}
+					on:mouseblur={(evt) => dotInteraction(evt, idx)}
+					tabindex="0"
+					aria-describedby="commit-tooltip"
+					role="tooltip"
+					aria-haspopup="true"
 				/>
 			{/each}
 		</g>
