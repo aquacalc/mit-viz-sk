@@ -234,7 +234,6 @@
 	$: rScale = d3.scaleSqrt().domain(extent_loc).range([10, 30]);
 	// .nice();
 
-
 	const lineGenerator = d3
 		.line()
 		.x((d) => d.x)
@@ -321,6 +320,14 @@
 
 	// $: console.log(`hoveredCommit[${hoveredIndex}] = `, hoveredCommit);
 
+	// BRUSH
+	let svg;
+	// $: console.log(d3.select(svg));
+	$: {
+		d3.select(svg).call(d3.brush());
+		d3.select(svg).selectAll('.dots, .overlay ~ *').raise();
+	}
+
 	// end VIZ end //
 	// *** VIZ *** //
 </script>
@@ -358,7 +365,7 @@
 
 	<!-- <h1>--| {cursor.y} | {yScale.invert(cursor.y)}</h1> -->
 
-	<svg viewBox="0 0 {width} {height}">
+	<svg viewBox="0 0 {width} {height}" bind:this={svg}>
 		<g class="gridlines" transform="translate({usableArea}, 0)" bind:this={xAxisGridlines} />
 		<g class="gridlines" transform="translate({usableArea.left}, 0)" bind:this={yAxisGridlines} />
 
@@ -378,11 +385,6 @@
 							100}</text
 					>
 				</g> -->
-				<g transform="translate({xScale(c.x)}, {yScale(c.y) - 0})">
-					<text dominant-baseline="middle" text-anchor="middle" class="label"
-						>{c.r}</text
-					>
-				</g>
 
 				<line
 					x1={xScale(c.x)}
@@ -393,6 +395,13 @@
 					stroke-width={1}
 				/>
 
+				<g transform="translate({xScale(c.x)}, {yScale(c.y) - 0})">
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<text dominant-baseline="middle" text-anchor="middle" class="label no-select">
+						{c.r}
+					</text>
+				</g>
+
 				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 				<!-- svelte-ignore a11y_role_supports_aria_props -->
 				<circle
@@ -400,7 +409,6 @@
 					cy={yScale(c.y)}
 					r={rScale(c.r)}
 					fill="steelblue"
-					opacity={0.6}
 					on:mouseenter={(evt) => dotInteraction(evt, idx)}
 					on:mouseleave={(evt) => dotInteraction(evt, idx)}
 					on:mousefocus={(evt) => dotInteraction(evt, idx)}
@@ -445,6 +453,20 @@
 		margin: 30px;
 	}
 
+	@keyframes marching-ants {
+		to {
+			stroke-dashoffset: -8; /* 5 + 3 */
+		}
+	}
+
+	svg :global(.selection) {
+		fill-opacity: 10%;
+		stroke: orange;
+		stroke-opacity: 70%;
+		stroke-dasharray: 5 3;
+		animation: marching-ants 2s linear infinite;
+	}
+
 	.gridlines {
 		stroke-opacity: 0.15;
 	}
@@ -480,6 +502,7 @@
 		transition: 200ms;
 		transform-origin: center;
 		transform-box: fill-box;
+		opacity: 0.5;
 
 		&:hover {
 			transform: scale(1.5);
@@ -488,11 +511,25 @@
 		}
 	}
 
+	/* text {
+		color: #fff;
+	} */
+
 	.label {
 		font-size: 0.7rem;
-		fill: white;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+		fill: #888;
+		/* fill: rgb(249, 249, 249); */
+		/* text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); */
 		font-family: Futura;
+	}
+
+	.no-select {
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
 	}
 
 	/* see: https://youtu.be/1zKX71GYisE */
