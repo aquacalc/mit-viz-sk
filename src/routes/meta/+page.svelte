@@ -213,17 +213,27 @@
 	// $: console.log(myTimeScale.domain()); // logged on my computer: [Sat Jan 01 2000 00:00:00 GMT+0100, Sun Jan 02 2000 00:00:00 GMT+0100]
 	// $: console.log(myTimeScale.range());
 
-	$: dateExtent = d3.extent(data.map((d) => d.datetime));
-	// $: console.log('dateExtent: ', dateExtent);
-	// $: console.log(d3.scaleTime().domain(dateExtent).range([0, width]).nice())
-	// $: console.log('---', dateExtent, ' -- ', d3.scaleTime.domain(dateExtent));
+	$: extent_datetime = d3.extent(data.map((d) => d.datetime));
+	$: extent_loc = d3.extent(commits.map((d) => d.totalLines));
+	// $: console.log('extent_datetime : ', extent_datetime );
+	// $: console.log(d3.scaleTime().domain(extent_datetime ).range([0, width]).nice())
+	// $: console.log('---', extent_datetime , ' -- ', d3.scaleTime.domain(extent));
 
-	$: xScale = d3.scaleTime().domain(dateExtent).range([usableArea.left, usableArea.right]).nice();
+	$: xScale = d3
+		.scaleTime()
+		.domain(extent_datetime)
+		.range([usableArea.left, usableArea.right])
+		.nice();
 	// .range([margin.left, width - margin.right]);
 
 	$: yScale = d3.scaleLinear().domain([0, 24]).range([usableArea.top, usableArea.bottom]);
 	// $: yScale = d3.scaleLinear().domain([24, 0]).range([usableArea.bottom, usableArea.top]);
 	// $: yScale = d3.scaleLinear().domain([24, 0]).range([0, height]);
+
+	// $: rScale = d3.scaleLinear().domain(extent_loc).range([10, 30]);
+	$: rScale = d3.scaleSqrt().domain(extent_loc).range([10, 30]);
+	// .nice();
+
 
 	const lineGenerator = d3
 		.line()
@@ -265,7 +275,7 @@
 	);
 	// PLOT DATA
 	// $: work_plot = commits.map((d) => ({ x: xScale(d.datetime), y: yScale(d.hourFrac) }));
-	$: work_plot = commits.map((d) => ({ ...d, x: d.datetime, y: d.hourFrac }));
+	$: work_plot = commits.map((d) => ({ ...d, x: d.datetime, y: d.hourFrac, r: d.totalLines }));
 
 	// $: console.log(commits);
 	// $: console.log('work_plot: ', work_plot);
@@ -342,8 +352,8 @@
 		<dd>{hoveredCommit.totalLines}</dd>
 		<dt>Hour</dt>
 		<dd>{Math.round(hoveredCommit.hourFrac * 100) / 100}</dd>
-		<!-- <dt>Time</dt>
-		 <dd>{hoveredCommit.time}</dd> -->
+		<!-- <hr />
+		<input type="checkbox" name="proba" id="proba" > -->
 	</dl>
 
 	<!-- <h1>--| {cursor.y} | {yScale.invert(cursor.y)}</h1> -->
@@ -368,9 +378,9 @@
 							100}</text
 					>
 				</g> -->
-				<g transform="translate({xScale(c.x)}, {yScale(c.y) - 12})">
+				<g transform="translate({xScale(c.x)}, {yScale(c.y) - 0})">
 					<text dominant-baseline="middle" text-anchor="middle" class="label"
-						>{commits[idx]?.totalLines}</text
+						>{c.r}</text
 					>
 				</g>
 
@@ -383,11 +393,14 @@
 					stroke-width={1}
 				/>
 
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+				<!-- svelte-ignore a11y_role_supports_aria_props -->
 				<circle
 					cx={xScale(c.x)}
 					cy={yScale(c.y)}
-					r={5}
+					r={rScale(c.r)}
 					fill="steelblue"
+					opacity={0.6}
 					on:mouseenter={(evt) => dotInteraction(evt, idx)}
 					on:mouseleave={(evt) => dotInteraction(evt, idx)}
 					on:mousefocus={(evt) => dotInteraction(evt, idx)}
@@ -470,6 +483,8 @@
 
 		&:hover {
 			transform: scale(1.5);
+			fill: orange;
+			opacity: 0.8;
 		}
 	}
 
