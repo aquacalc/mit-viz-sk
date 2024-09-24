@@ -145,38 +145,40 @@
 		(v) => v.length,
 		(d) => d.datetime.toLocaleString('en', { dayPeriod: 'short' })
 	);
-	$: workByDate = d3.rollups(
+
+	$: fileTypeGroups = d3.rollups(
 		data,
 		(v) => v.length,
-		(d) =>
-			d.datetime.toLocaleString('en', {
-				weekday: 'short',
-				month: 'short',
-				day: '2-digit',
-				hour: '2-digit',
-				dayPeriod: 'short'
-			})
+		(d) => d.type
 	);
-	// $: console.log('workByPeriod: ', workByPeriod);
-	// $: console.log('** workByDate: ', workByDate);
-	$: maxPeriod = d3.greatest(workByPeriod, (d) => d[1])?.[0];
-	// $: console.log(`maxPeriod: ${maxPeriod}`);
-	// $: console.log('workByPeriod: ', d3.greatest(workByPeriod, d => d[1]?.d[0]));
+	// $: console.log(`fileTypeGroups`, fileTypeGroups);
+	// $: {
+	// 	console.log(`----=====----`);
+	// 	console.log('fileTypeGroups: ', fileTypeGroups);
+	// 	console.log(`----=====----`);
+	// }
+	// $: console.log(`workByPeriod`, workByPeriod)
 
+	// $: workByDate = d3.rollups(
+	// 	data,
+	// 	(v) => v.length,
+	// 	(d) =>
+	// 		d.datetime.toLocaleString('en', {
+	// 			weekday: 'short',
+	// 			month: 'short',
+	// 			day: '2-digit',
+	// 			hour: '2-digit',
+	// 			dayPeriod: 'short'
+	// 		})
+	// );
+
+	$: maxPeriod = d3.greatest(workByPeriod, (d) => d[1])?.[0];
 	// Day of the week that most work is done
 
 	// ------ //
 
 	// $: console.log(`data: `, data);
-
 	// $: console.log(`COMMITS: `, commits);
-
-	// $: console.log(`COMMITS_BIS: `, commitsBis);
-	// $: console.log(`COMMITS_FILES: `, commitsFiles);
-	// $: console.log(
-	// 	`COMMITS_BIS: `,
-	// 	commitsBis.slice(0, 1).map(([one, two], idx) => console.log(`${idx}: `, one, ' - ', two[0]))
-	// );
 
 	$: linesMedian = d3.median(data, (d) => d.line);
 	$: linesMax = d3.max(data, (d) => d.line);
@@ -186,14 +188,6 @@
 		(v) => d3.max(v, (v) => v.line),
 		(d) => d.file
 	);
-	// $: console.log(`--fileLengths-- `, fileLengths);
-	// $: console.log(`data: `, data[4]);
-	// $: console.log(`commitsBis: `, commitsBis.slice(0, 2));
-	// $: console.log(`commits: `, commits.slice(0, 2));
-	// $: console.log(d3.min(data, d => d.line))
-	// $: console.log(d3.max(data, d => d.line))
-	// $: console.log(d3.median(data, d => d.line))
-	// $: console.log(numAuths)
 
 	//   *** VIZ ***   //
 	// begin VIZ begin //
@@ -211,15 +205,8 @@
 	usableArea.width = usableArea.right - usableArea.left;
 	usableArea.height = usableArea.bottom - usableArea.top;
 
-	// const myTimeScale = d3.scaleTime();
-	// $: console.log(myTimeScale.domain()); // logged on my computer: [Sat Jan 01 2000 00:00:00 GMT+0100, Sun Jan 02 2000 00:00:00 GMT+0100]
-	// $: console.log(myTimeScale.range());
-
 	$: extent_datetime = d3.extent(data.map((d) => d.datetime));
 	$: extent_loc = d3.extent(commits.map((d) => d.totalLines));
-	// $: console.log('extent_datetime : ', extent_datetime );
-	// $: console.log(d3.scaleTime().domain(extent_datetime ).range([0, width]).nice())
-	// $: console.log('---', extent_datetime , ' -- ', d3.scaleTime.domain(extent));
 
 	$: xScale = d3
 		.scaleTime()
@@ -229,12 +216,9 @@
 	// .range([margin.left, width - margin.right]);
 
 	$: yScale = d3.scaleLinear().domain([0, 24]).range([usableArea.top, usableArea.bottom]);
-	// $: yScale = d3.scaleLinear().domain([24, 0]).range([usableArea.bottom, usableArea.top]);
-	// $: yScale = d3.scaleLinear().domain([24, 0]).range([0, height]);
 
 	// $: rScale = d3.scaleLinear().domain(extent_loc).range([10, 30]);
 	$: rScale = d3.scaleSqrt().domain(extent_loc).range([10, 30]);
-	// .nice();
 
 	const lineGenerator = d3
 		.line()
@@ -326,43 +310,37 @@
 	let svg;
 	$: brushSelection = [[], []];
 
+	let brushedTotal = 0;
+
+	// [NB] Beautiful logic
+	$: selectedCommits = brushSelection ? commits.filter(isCommitSelected) : [];
+	$: hasSelection = brushSelection && selectedCommits.length > 0;
+
+	// $: console.log(`selectedCommits: `, selectedCommits);
+
+	$: selectedCommitTypes = selectedCommits.map(x => d3.rollups(x.lines, v => v.length, d => d.type))
+	
+
 	const brushed = (e) => {
 		brushSelection = e.selection;
-		// console.log(`brushSelection: `, brushSelection);
-
-		// isCommitSelected()
 	};
 
 	const isCommitSelected = (commit) => {
-		// console.log(`commit: `, commit);
-		console.log(`** brushSelection: `, brushSelection);
-
 		if (!brushSelection) {
 			console.log(`FALSE`);
+			// brushedTotal = 0;
 			return false;
 		}
 
-		// TODO return true if commit is within brushSelection
-		// and false if not
-
-		console.log(`TRUE`, commit);
 		let min = { x: brushSelection[0][0], y: brushSelection[0][1] };
 		let max = { x: brushSelection[1][0], y: brushSelection[1][1] };
 
 		let x = xScale(commit.datetime);
 		let y = yScale(commit.hourFrac);
 
-		console.log(`[${x}, ${y}] vs. `, min, '-', max);
-		console.log(`X: ${x >= min.x} && ${x <= max.x}`);
-		console.log(`Y: ${y >= min.y} && ${y <= max.y}`);
-		console.log(`=> ${x >= min.x && x <= max.x && y >= min.y && y <= max.y}`);
-		console.log(`------`);
-		console.log(``);
+		let brushTest = x >= min.x && x <= max.x && y >= min.y && y <= max.y;
 
-		// if(commit.totalLines === 110) return true;
-		// return false;
-
-		return x >= min.x && x <= max.x && y >= min.y && y <= max.y;
+		return brushTest;
 	};
 
 	$: {
@@ -374,9 +352,6 @@
 	// end VIZ end //
 	// *** VIZ *** //
 </script>
-
-<!-- <h1>Meta</h1> -->
-<!-- <p>codebase stats</p> -->
 
 <Stats {data} {linesMedian} {linesMax} {numFiles} />
 
@@ -406,7 +381,16 @@
 		<input type="checkbox" name="proba" id="proba" > -->
 	</dl>
 
-	<!-- <h1>--| {cursor.y} | {yScale.invert(cursor.y)}</h1> -->
+	<p>
+		{hasSelection ? selectedCommits.length : 'No'} commit{selectedCommits.length === 1 ? '' : 's'} selected
+	</p>
+	<p style="display: flex; justify-content: space-around;">
+		{#each fileTypeGroups as type}
+			<span>
+				{type[0]}: {type[1]}
+			</span>
+		{/each}
+	</p>
 
 	<svg viewBox="0 0 {width} {height}" bind:this={svg}>
 		<g class="gridlines" transform="translate({usableArea}, 0)" bind:this={xAxisGridlines} />
@@ -422,16 +406,16 @@
 
 		<g class="dots">
 			{#each work_plot as c, idx}
-				<g transform="translate({xScale(c.x)}, {yScale(c.y) - 12})">
+				<!-- <g transform="translate({xScale(c.x)}, {yScale(c.y) - 12})">
 					<text dominant-baseline="middle" text-anchor="middle" class="label"
 						>{idx} [{Math.round(xScale(c.x))}, {Math.round(yScale(c.y))}]: {Math.round(c.y * 100) /
 							100}</text
 					>
-				</g>
+				</g> -->
 
 				<line
 					x1={xScale(c.x)}
-					y1={yScale(c.y)}
+					y1={yScale(c.y) + rScale(c.r)}
 					x2={xScale(c.x)}
 					y2={yScale(24)}
 					stroke="orange"
