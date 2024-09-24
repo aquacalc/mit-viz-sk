@@ -65,6 +65,8 @@
 
 				return ret;
 			});
+
+		commits = d3.sort(commits, (d) => -d.totalLines);
 	});
 
 	// ------ //
@@ -84,39 +86,39 @@
 
 	// NUMBER OF FILES in the codebase
 	$: numFiles = d3.groups(data, (d) => d.file).length;
-	$: console.log(`Files ∆'d: `, numFiles);
+	// $: console.log(`Files ∆'d: `, numFiles);
 
 	// NUMBER OF AUTHORS in the codebase
 	// $: numAuths = d3.groups(data, (d) => d.author).length;
 
 	// NUMBER OF COMMITS in the codebase
 	$: numCommits = d3.groups(data, (d) => d.commit).length;
-	$: console.log(`Commits: `, numCommits);
+	// $: console.log(`Commits: `, numCommits);
 
 	// MAXimum FILE LENGTH (number of characters in line after trimming)
 	$: fileLength_Max = d3.max(data, (d) => d.length);
-	$: console.log(`Max file length: `, fileLength_Max, ' characters');
+	// $: console.log(`Max file length: `, fileLength_Max, ' characters');
 	$: fileWithLength_Max = data.find((d) => d.length === fileLength_Max);
-	$: console.log(
-		`File with max file length: `,
-		fileWithLength_Max,
-		' in commit: ',
-		fileWithLength_Max?.commit
-	);
+	// $: console.log(
+	// 	`File with max file length: `,
+	// 	fileWithLength_Max,
+	// 	' in commit: ',
+	// 	fileWithLength_Max?.commit
+	// );
 
 	// Longest file
 
 	// AVERAGE FILE LENGTH (in lines)
 	$: fileLength_Mean = d3.mean(data, (d) => d.length);
-	$: console.log(`Mean file length: `, fileLength_Mean, ' characters');
+	// $: console.log(`Mean file length: `, fileLength_Mean, ' characters');
 
 	// MEDIAN FILE LENGTH (in lines)
 	$: fileLength_Median = d3.median(data, (d) => d.length);
-	$: console.log(`Median file length: `, fileLength_Median, ' characters');
+	// $: console.log(`Median file length: `, fileLength_Median, ' characters');
 	$: fileWithLength_Median = data.filter((d) => d.length === fileLength_Median);
-	$: console.log(
-		`${fileWithLength_Median.length} files hve the median file length (${fileLength_Median} characters)`
-	);
+	// $: console.log(
+	// 	`${fileWithLength_Median.length} files hve the median file length (${fileLength_Median} characters)`
+	// );
 
 	// Average line length (in characters)
 
@@ -126,9 +128,9 @@
 
 	// Maximum depth
 	$: maxDepth = d3.max(data, (d) => d.depth);
-	$: console.log(`maxDepth --> ${maxDepth}`);
+	// $: console.log(`maxDepth --> ${maxDepth}`);
 	// Which line(s) have max depth?
-	$: console.log(data.filter((d) => d.depth === maxDepth));
+	// $: console.log(data.filter((d) => d.depth === maxDepth));
 
 	// Deepest line
 
@@ -156,7 +158,7 @@
 			})
 	);
 	// $: console.log('workByPeriod: ', workByPeriod);
-	$: console.log('** workByDate: ', workByDate);
+	// $: console.log('** workByDate: ', workByDate);
 	$: maxPeriod = d3.greatest(workByPeriod, (d) => d[1])?.[0];
 	// $: console.log(`maxPeriod: ${maxPeriod}`);
 	// $: console.log('workByPeriod: ', d3.greatest(workByPeriod, d => d[1]?.d[0]));
@@ -277,7 +279,7 @@
 	$: work_plot = commits.map((d) => ({ ...d, x: d.datetime, y: d.hourFrac, r: d.totalLines }));
 
 	// $: console.log(commits);
-	// $: console.log('work_plot: ', work_plot);
+	$: console.log('work_plot: ', work_plot);
 
 	// $: commits.map((c) => console.log(`??? ${c.datetime}: ${c.hourFrac}, ${yScale(c.hourFrac)}`));
 	// $: commits.map((c) => console.log(`??? ${c.datetime}, ${xScale(c.datetime)}`));
@@ -320,11 +322,52 @@
 
 	// $: console.log(`hoveredCommit[${hoveredIndex}] = `, hoveredCommit);
 
-	// BRUSH
+	// ** BRUSH ** //
 	let svg;
-	// $: console.log(d3.select(svg));
+	$: brushSelection = [[], []];
+
+	const brushed = (e) => {
+		brushSelection = e.selection;
+		// console.log(`brushSelection: `, brushSelection);
+
+		// isCommitSelected()
+	};
+
+	const isCommitSelected = (commit) => {
+		// console.log(`commit: `, commit);
+		console.log(`** brushSelection: `, brushSelection);
+
+		if (!brushSelection) {
+			console.log(`FALSE`);
+			return false;
+		}
+
+		// TODO return true if commit is within brushSelection
+		// and false if not
+
+		console.log(`TRUE`, commit);
+		let min = { x: brushSelection[0][0], y: brushSelection[0][1] };
+		let max = { x: brushSelection[1][0], y: brushSelection[1][1] };
+
+		let x = xScale(commit.datetime);
+		let y = yScale(commit.hourFrac);
+
+		console.log(`[${x}, ${y}] vs. `, min, '-', max);
+		console.log(`X: ${x >= min.x} && ${x <= max.x}`);
+		console.log(`Y: ${y >= min.y} && ${y <= max.y}`);
+		console.log(`=> ${x >= min.x && x <= max.x && y >= min.y && y <= max.y}`);
+		console.log(`------`);
+		console.log(``);
+
+		// if(commit.totalLines === 110) return true;
+		// return false;
+
+		return x >= min.x && x <= max.x && y >= min.y && y <= max.y;
+	};
+
 	$: {
-		d3.select(svg).call(d3.brush());
+		d3.select(svg).call(d3.brush().on('start brush end', brushed));
+
 		d3.select(svg).selectAll('.dots, .overlay ~ *').raise();
 	}
 
@@ -379,12 +422,12 @@
 
 		<g class="dots">
 			{#each work_plot as c, idx}
-				<!-- <g transform="translate({xScale(c.x)}, {yScale(c.y) - 12})">
+				<g transform="translate({xScale(c.x)}, {yScale(c.y) - 12})">
 					<text dominant-baseline="middle" text-anchor="middle" class="label"
 						>{idx} [{Math.round(xScale(c.x))}, {Math.round(yScale(c.y))}]: {Math.round(c.y * 100) /
 							100}</text
 					>
-				</g> -->
+				</g>
 
 				<line
 					x1={xScale(c.x)}
@@ -395,8 +438,8 @@
 					stroke-width={1}
 				/>
 
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<g transform="translate({xScale(c.x)}, {yScale(c.y) - 0})">
-					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					<text dominant-baseline="middle" text-anchor="middle" class="label no-select">
 						{c.r}
 					</text>
@@ -413,6 +456,7 @@
 					on:mouseleave={(evt) => dotInteraction(evt, idx)}
 					on:mousefocus={(evt) => dotInteraction(evt, idx)}
 					on:mouseblur={(evt) => dotInteraction(evt, idx)}
+					class:selected={isCommitSelected(c)}
 					tabindex="0"
 					aria-describedby="commit-tooltip"
 					role="tooltip"
@@ -511,9 +555,11 @@
 		}
 	}
 
-	/* text {
-		color: #fff;
-	} */
+	.selected {
+		fill: brown;
+		stroke: crimson;
+		stroke-width: 8;
+	}
 
 	.label {
 		font-size: 0.7rem;
