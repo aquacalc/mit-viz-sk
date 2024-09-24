@@ -263,7 +263,7 @@
 	$: work_plot = commits.map((d) => ({ ...d, x: d.datetime, y: d.hourFrac, r: d.totalLines }));
 
 	// $: console.log(commits);
-	$: console.log('work_plot: ', work_plot);
+	// $: console.log('work_plot: ', work_plot);
 
 	// $: commits.map((c) => console.log(`??? ${c.datetime}: ${c.hourFrac}, ${yScale(c.hourFrac)}`));
 	// $: commits.map((c) => console.log(`??? ${c.datetime}, ${xScale(c.datetime)}`));
@@ -318,8 +318,126 @@
 
 	// $: console.log(`selectedCommits: `, selectedCommits);
 
-	$: selectedCommitTypes = selectedCommits.map(x => d3.rollups(x.lines, v => v.length, d => d.type))
-	
+	// File types ∆d by commit
+	$: selectedCommitTypes = selectedCommits.map((x) =>
+		d3.rollups(
+			x.lines,
+			(v) => v.length,
+			(d) => d.type
+		)
+	);
+	// $: console.log(`UUUUUU: `, selectedCommitTypes);
+
+	$: resultArray3 = d3.rollups(
+			selectedCommitTypes.flat(1),
+			// ARR3,
+			(v) => d3.sum(v, (d) => d[1]), // Sum the second elements of the groups
+			(d) => d[0] // Group by the first element
+		);
+
+	$: {
+		// let ARR = [
+		// 	['js', 1],
+		// 	['js', 3],
+		// 	['css', 34],
+		// 	['css', 12],
+		// 	['svelte', 5]
+		// ];
+
+		// // Create an object to store the sum of numbers for each unique string
+		// let groupedSums = {};
+
+		// // Iterate through each sub-array in ARR
+		// for (let i = 0; i < ARR.length; i++) {
+		// 	let [key, value] = ARR[i];
+
+		// 	// If the key already exists in the groupedSums object, add the value to its current sum
+		// 	if (groupedSums[key]) {
+		// 		groupedSums[key] += value;
+		// 	} else {
+		// 		// Otherwise, create a new key and initialize it with the current value
+		// 		groupedSums[key] = value;
+		// 	}
+		// }
+
+		// // Transform the groupedSums object back into an array of sub-arrays
+		// let resultArray = Object.keys(groupedSums).map((key) => [key, groupedSums[key]]);
+
+		// console.log(resultArray); // [['js', 4], ['css', 46], ['svelte', 5]]
+
+		// let myArray = ['js', 1];
+		// console.log(
+		// 	`MERGE...`,
+		// 	d3.merge([
+		// 		['js', 1],
+		// 		['js', 3],
+		// 		['css', 34],
+		// 		['css', 12],
+		// 		['svelte', 5]
+		// 	])
+		// );
+		// [
+		// 	['js', 4],
+		// 	['css', 46],
+		// 	['svelte', 5]
+		// ];
+
+		// // ------------ //
+		// let ARR2 = [
+		// 	['moe', 10],
+		// 	['larry', 45],
+		// 	['curley', 34],
+		// 	['moe', 12],
+		// 	['svelte', 5]
+		// ];
+
+		// // Use reduce() to create the groupedSums object
+		// let groupedSums2 = ARR2.reduce((accumulator, [key, value]) => {
+		// 	// If the key already exists in the accumulator, add the value to its current sum
+		// 	if (accumulator[key]) {
+		// 		accumulator[key] += value;
+		// 	} else {
+		// 		// Otherwise, create a new key and initialize it with the current value
+		// 		accumulator[key] = value;
+		// 	}
+		// 	return accumulator;
+		// }, {});
+
+		// // Transform the groupedSums object back into an array of sub-arrays
+		// let resultArray2 = Object.keys(groupedSums).map((key) => [key, groupedSums[key]]);
+
+		// console.log(resultArray); // [['moe', 22], ['larry', 45], ['curley', 34], ['svelte', 5]]
+
+		// ]]]]]]]]]]]]]
+		// let ARR3 = [
+		// 	['moe', 10],
+		// 	['larry', 45],
+		// 	['curley', 34],
+		// 	['curley', 34],
+		// 	['moe', 12],
+		// 	['svelte', 5]
+		// ];
+
+// (2) ['js', 39]
+// (2) ['js', 13]
+// (2) ['css', 64]
+// (2) ['css', 15]
+// (2) ['svelte', 67]
+// (2) ['svelte', 8]
+
+		// console.log(selectedCommitTypes.flat(1))
+
+		// Use d3.rollups to group by the first element and sum the second elements
+		// let resultArray3 = d3.rollups(
+		// 	selectedCommitTypes.flat(1),
+		// 	// ARR3,
+		// 	(v) => d3.sum(v, (d) => d[1]), // Sum the second elements of the groups
+		// 	(d) => d[0] // Group by the first element
+		// );
+
+		// console.log("---> ", resultArray3); // [['moe', 22], ['larry', 45], ['curley', 34], ['svelte', 5]]
+		// console.log(`MERGE...`, [myArray, ['js', 3], ['css', 34]].reduce((acc, nxt) => nxt, 0);
+	}
 
 	const brushed = (e) => {
 		brushSelection = e.selection;
@@ -384,8 +502,10 @@
 	<p>
 		{hasSelection ? selectedCommits.length : 'No'} commit{selectedCommits.length === 1 ? '' : 's'} selected
 	</p>
+	
 	<p style="display: flex; justify-content: space-around;">
-		{#each fileTypeGroups as type}
+		<!-- {#each fileTypeGroups as type} -->
+		{#each resultArray3 as type}
 			<span>
 				{type[0]}: {type[1]}
 			</span>
