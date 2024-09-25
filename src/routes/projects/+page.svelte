@@ -70,7 +70,7 @@
 </label>
 
 {#if filteredProjectsAll.length > 0}
-	<Pie {myPieData} bind:selectedIndex={selectedYearIndex} />
+	<Pie {myPieData} showSlider='true' bind:selectedIndex={selectedYearIndex} />
 	<!-- <h3>(selectedYearIndex = {selectedYearIndex} =&gt; {selectedYear})</h3> -->
 {:else}
 	<div id="sorry">
