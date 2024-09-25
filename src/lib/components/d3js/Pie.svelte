@@ -3,6 +3,9 @@
 
 	export let myPieData;
 	export let selectedIndex = -1;
+	export let showSlider = false;
+
+	$: console.log(`myPieData = `, myPieData);
 
 	// let { myPieData, query = '' } = $props();
 
@@ -22,23 +25,27 @@
 	// const tot = myPieData.reduce((sum, next) => sum + next, 0);
 	$: tot = myPieData.reduce((sum, next) => sum + next.value, 0);
 
-	// $: console.log(`TOT = ${tot}`);
+	$: console.log(`TOT = ${tot}`);
 
 	let startAngle = 0;
 	let endAngle = 0;
 
 	$: arcsArray = myPieData.map((a) => {
 		endAngle = startAngle + (a.value / tot) * 2 * Math.PI;
+
+		console.log(`${startAngle} + (${a.value} / ${tot}) * 2 pi = ${endAngle}`);
+
 		let arcData = {
 			startAngle,
 			endAngle
 		};
+
 		startAngle = endAngle;
 
 		return arcData;
 	});
 
-	// console.log(`ARC array: `, arcsArray);
+	$: console.log(`ARC array: `, arcsArray);
 
 	$: arcsGenerator = arcsArray.map((arc) => arcGenerator(arc));
 
@@ -71,21 +78,23 @@
 	// -------------- //
 </script>
 
-<div id="range-angle">
-	<label for="end-angle">
-		End Angle
-		<input
-			type="range"
-			name="end-angle"
-			id="end-angle"
-			bind:value={myEndAngleCoeff}
-			min={-2}
-			max={2}
-			step={0.001}
-		/>
-	</label>
-	{myEndAngle.toFixed(4)} rad ({(myEndAngle * (180 / Math.PI)).toFixed(2)}°)
-</div>
+{#if showSlider}
+	<div id="range-angle">
+		<label for="end-angle">
+			End Angle
+			<input
+				type="range"
+				name="end-angle"
+				id="end-angle"
+				bind:value={myEndAngleCoeff}
+				min={-2}
+				max={2}
+				step={0.001}
+			/>
+		</label>
+		{myEndAngle.toFixed(4)} rad ({(myEndAngle * (180 / Math.PI)).toFixed(2)}°)
+	</div>
+{/if}
 
 <div class="container">
 	<svg viewBox="-50 -50 100 100">
@@ -178,7 +187,8 @@
 		--mid-angle: calc(var(--start-angle) + var(--angle) / 2);
 
 		&.selected {
-			transform: rotate(var(--mid-angle)) translateY(-6px) scale(1.1) rotate(calc(-1 * var(--mid-angle)));
+			transform: rotate(var(--mid-angle)) translateY(-6px) scale(1.1)
+				rotate(calc(-1 * var(--mid-angle)));
 		}
 
 		transform: rotate(var(--mid-angle)) translateY(0) rotate(calc(-1 * var(--mid-angle)));
