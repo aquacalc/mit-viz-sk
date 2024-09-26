@@ -12,6 +12,9 @@
 	let commitsBis = [];
 	let commitsFiles = [];
 
+	// commits with breakdown of file types
+	let selectedCommitTypes_2;
+
 	onMount(async () => {
 		// GITHUB DATA in /static as 11-column .csv file
 		// file, line, type, commit, author, date, time, timezone, datetime, depth, length
@@ -52,7 +55,19 @@
 					timezone,
 					datetime,
 					hourFrac: datetime.getHours() + datetime.getMinutes() / 60,
-					totalLines: lines.length
+					totalLines: lines.length,
+					// Add breakdown of file types to decorate brushed <circle>s
+					// when click/expand a slice of Pie.svelte
+					fileTypes: d3
+						.rollups(
+							lines,
+							(v) => v.length,
+							(d) => d.type
+						)
+						.reduce((accumulator, [key, value]) => {
+							accumulator[key] = value;
+							return accumulator;
+						}, {})
 				};
 
 				// number of lines modified by this commit
@@ -68,8 +83,54 @@
 				return ret;
 			});
 
+		// For each commit, add a key for each file type
+
+		// commits = commits.map((x) => ({
+		selectedCommitTypes_2 = commits.map((x) => ({
+			...x
+
+			// fileTypes: d3
+			// 	.rollups(
+			// 		x.lines,
+			// 		(v) => v.length,
+			// 		(d) => d.type
+			// 	)
+			// 	.reduce((accumulator, [key, value]) => {
+			// 		accumulator[key] = value;
+			// 		return accumulator;
+			// 	}, {})
+		}));
+
 		commits = d3.sort(commits, (d) => -d.totalLines);
+
+		// let proxy = commits
+		// console.log(`0. PROXY = `, proxy)
+
+		// proxy = proxy.map(d => ({...d, "yadda": d.author}))
+		// console.log(`1. PROXY = `, proxy)
+
+		// console.log(`^^selectedCommitTypes_2^^: `, selectedCommitTypes_2);
 	});
+
+	// For each commit, add a key for each file type
+	// commits = commits.map((x) => ({
+	// 	// selectedCommitTypes_2 = commits.map((x) => ({
+	// 	...x,
+
+	// 	fileTypes: d3
+	// 		.rollups(
+	// 			x.lines,
+	// 			(v) => v.length,
+	// 			(d) => d.type
+	// 		)
+	// 		.reduce((accumulator, [key, value]) => {
+	// 			accumulator[key] = value;
+	// 			return accumulator;
+	// 		}, {})
+	// }));
+
+	// $: console.log(`data: `, data);
+	$: console.log(`COMMITS: `, commits);
 
 	// ------ //
 	// see: https://www.npmjs.com/package/elocuent
@@ -178,9 +239,6 @@
 	// Day of the week that most work is done
 
 	// ------ //
-
-	// $: console.log(`data: `, data);
-	// $: console.log(`COMMITS: `, commits);
 
 	$: linesMedian = d3.median(data, (d) => d.line);
 	$: linesMax = d3.max(data, (d) => d.line);
@@ -309,31 +367,50 @@
 
 	// $: console.log(`hoveredCommit[${hoveredIndex}] = `, hoveredCommit);
 
-	// ** BRUSH ** //
+	// **       BRUSH       ** //
+	// **       BRUSH       ** //
+	// **       BRUSH       ** //
 	let svg;
 	$: brushSelection = [[], []];
 
 	let brushedTotal = 0;
 
+	// "Selecting a wedge doesn’t really do that much right now.
+	// However, the ability to select a wedge becomes truly powerful
+	// when handled by the parent page."
+	// Step 5: https://vis-society.github.io/labs/6/
+	let selectedTypeIndex = -1;
+	let selectedType;
+	let selectedCommitTypes;
+	let selectedCommits;
+
 	// [NB] Beautiful logic
 	$: selectedCommits = brushSelection ? commits.filter(isCommitSelected) : [];
 	$: hasSelection = brushSelection && selectedCommits.length > 0;
 
-	// $: console.log(`selectedCommits: `, selectedCommits);
+	$: console.log(`***** selectedCommits: `, selectedCommits);
 
-	// File types ∆d by commit
-	$: selectedCommitTypes = selectedCommits.map((x) =>
-		d3.rollups(
-			x.lines,
-			(v) => v.length,
-			(d) => d.type
-		)
+	$: console.log(
+		`+++++ `,
+		selectedCommits?.map((x) => console.log(x))
 	);
-	// $: console.log(`UUUUUU: `, selectedCommitTypes);
+	// File types ∆d in brushed commits
+	$: {
+		console.log(`00000 selectedCommits `, selectedCommits);
+
+		// NOT ITERABLE BECAUSE IT'S...an object??!
+		selectedCommitTypes = selectedCommits.map((x) =>
+			d3.rollups(
+				x.lines,
+				(v) => v.length,
+				(d) => d.type
+			)
+		);
+		console.log(`11111`);
+	}
 
 	$: resultArray3 = d3.rollups(
 		selectedCommitTypes.flat(1),
-		// ARR3,
 		(v) => d3.sum(v, (d) => d[1]), // Sum the second elements of the groups
 		(d) => d[0] // Group by the first element
 	);
@@ -341,108 +418,14 @@
 	// ================ //
 	// ================ //
 
-	// x = d3.rollups(
-	// 	// filteredProjects,
-	// 	filteredProjectsAll,
-	// 	(n) => n.length,
-	// 	(d) => d.year
-	// );
-
 	$: myPieData = resultArray3.map(([label, value]) => ({ label, value }));
-	$: console.log(`myPieData -- `, myPieData);
+
+	// $: console.log(`resultArray3 -- `, resultArray3);
+	// $: console.log(`myPieData -- `, myPieData);
 	// .sort((a, b) => a.label - b.label);
 
 	// ================ //
 	// ================ //
-
-	$: {
-		// let ARR = [
-		// 	['js', 1],
-		// 	['js', 3],
-		// 	['css', 34],
-		// 	['css', 12],
-		// 	['svelte', 5]
-		// ];
-		// // Create an object to store the sum of numbers for each unique string
-		// let groupedSums = {};
-		// // Iterate through each sub-array in ARR
-		// for (let i = 0; i < ARR.length; i++) {
-		// 	let [key, value] = ARR[i];
-		// 	// If the key already exists in the groupedSums object, add the value to its current sum
-		// 	if (groupedSums[key]) {
-		// 		groupedSums[key] += value;
-		// 	} else {
-		// 		// Otherwise, create a new key and initialize it with the current value
-		// 		groupedSums[key] = value;
-		// 	}
-		// }
-		// // Transform the groupedSums object back into an array of sub-arrays
-		// let resultArray = Object.keys(groupedSums).map((key) => [key, groupedSums[key]]);
-		// console.log(resultArray); // [['js', 4], ['css', 46], ['svelte', 5]]
-		// let myArray = ['js', 1];
-		// console.log(
-		// 	`MERGE...`,
-		// 	d3.merge([
-		// 		['js', 1],
-		// 		['js', 3],
-		// 		['css', 34],
-		// 		['css', 12],
-		// 		['svelte', 5]
-		// 	])
-		// );
-		// [
-		// 	['js', 4],
-		// 	['css', 46],
-		// 	['svelte', 5]
-		// ];
-		// // ------------ //
-		// let ARR2 = [
-		// 	['moe', 10],
-		// 	['larry', 45],
-		// 	['curley', 34],
-		// 	['moe', 12],
-		// 	['svelte', 5]
-		// ];
-		// // Use reduce() to create the groupedSums object
-		// let groupedSums2 = ARR2.reduce((accumulator, [key, value]) => {
-		// 	// If the key already exists in the accumulator, add the value to its current sum
-		// 	if (accumulator[key]) {
-		// 		accumulator[key] += value;
-		// 	} else {
-		// 		// Otherwise, create a new key and initialize it with the current value
-		// 		accumulator[key] = value;
-		// 	}
-		// 	return accumulator;
-		// }, {});
-		// // Transform the groupedSums object back into an array of sub-arrays
-		// let resultArray2 = Object.keys(groupedSums).map((key) => [key, groupedSums[key]]);
-		// console.log(resultArray); // [['moe', 22], ['larry', 45], ['curley', 34], ['svelte', 5]]
-		// ]]]]]]]]]]]]]
-		// let ARR3 = [
-		// 	['moe', 10],
-		// 	['larry', 45],
-		// 	['curley', 34],
-		// 	['curley', 34],
-		// 	['moe', 12],
-		// 	['svelte', 5]
-		// ];
-		// (2) ['js', 39]
-		// (2) ['js', 13]
-		// (2) ['css', 64]
-		// (2) ['css', 15]
-		// (2) ['svelte', 67]
-		// (2) ['svelte', 8]
-		// console.log(selectedCommitTypes.flat(1))
-		// Use d3.rollups to group by the first element and sum the second elements
-		// let resultArray3 = d3.rollups(
-		// 	selectedCommitTypes.flat(1),
-		// 	// ARR3,
-		// 	(v) => d3.sum(v, (d) => d[1]), // Sum the second elements of the groups
-		// 	(d) => d[0] // Group by the first element
-		// );
-		// console.log("---> ", resultArray3); // [['moe', 22], ['larry', 45], ['curley', 34], ['svelte', 5]]
-		// console.log(`MERGE...`, [myArray, ['js', 3], ['css', 34]].reduce((acc, nxt) => nxt, 0);
-	}
 
 	const brushed = (e) => {
 		brushSelection = e.selection;
@@ -470,6 +453,38 @@
 		d3.select(svg).call(d3.brush().on('start brush end', brushed));
 
 		d3.select(svg).selectAll('.dots, .overlay ~ *').raise();
+	}
+
+	$: {
+		// (1) When at least one <circle> in the scatterplot is brushed, the pie chart
+		//     of file types in brushed <circle>s is displayed to the right (below, on small screens)
+
+		// (2) When a pie chart segment is selected, its selectedTypeIndex, a prop of Pie.svelte
+		//     which is bound to <Pie /> in this file, is assigned to selectedType
+
+		selectedType = selectedTypeIndex > -1 ? myPieData[selectedTypeIndex]?.label : null;
+		// filteredByType = projects.filter((d) => d.year === selectedType);
+
+		// Get file type represented by 'popped' pie slice
+		// [**] In onMount(), add key/value pairs for each
+		//      file type for every commit
+
+		// console.log(`selectedTypeIndex: `, selectedTypeIndex);
+
+		// --- Aspetta! Già l'abbiamo qui... --- //
+		// --- MUST ADD ID to each array element of selectedCommitTypes array
+		// --- OR...add this info to commit in onMount()...?
+
+		// console.log(`++ selectedCommitTypes ++ `, selectedCommitTypes);
+		// console.log(`selectedType: `, selectedType);
+
+		// Get number of this file type in each brushed <circle>
+		// console.log(`commits: `, commits);
+
+		console.log(`selectedCommits: `, selectedCommits);
+		// console.log(`resultArray3: `, resultArray3);
+		console.log(` --- `);
+		console.log(`  `);
 	}
 
 	// end VIZ end //
@@ -504,83 +519,95 @@
 		<input type="checkbox" name="proba" id="proba" > -->
 	</dl>
 
-	<p>
-		{hasSelection ? selectedCommits.length : 'No'} commit{selectedCommits.length === 1 ? '' : 's'} selected
-	</p>
-
 	<!-- <p style="display: flex; justify-content: space-around;">
 		{#each resultArray3 as type}
-			<span>
-				{type[0]}: {type[1]}
+		<span>
+			{type[0]}: {type[1]}
 			</span>
-		{/each}
-	</p> -->
+			{/each}
+			</p> -->
 
-	<div class="harness" style="width: 80%; margin-left: 100px; display: flex; justify-content: space-around; flex-direction: row-reverse;">
-		<Pie id="pie" {myPieData} />
+	<div
+		class="harness"
+		style="width: 80%; margin-left: 100px; display: flex; justify-content: space-around; flex-direction: row-reverse;"
+	>
+		<div class="my-pie" style="min-width: 30%;">
+			<p style="text-align: center;">
+				{hasSelection ? selectedCommits.length : 'No'} commit{selectedCommits.length === 1
+					? ''
+					: 's'} selected
+			</p>
+
+			{#if myPieData.length > 0}
+				<!--  bind:selectedIndex={selectedTypeIndex} -->
+				<Pie id="pie" {myPieData} bind:selectedIndex={selectedTypeIndex} />
+			{:else}
+				<p>
+					Lorem ipsum, dolor sit amet consectetur adipisicing elit. Consectetur neque magnam natus,
+					alias beatae assumenda iusto optio fugit tenetur corrupti at excepturi dolorum, architecto
+					id doloremque! Tenetur asperiores qui soluta?
+				</p>
+			{/if}
+		</div>
 
 		<!-- <div class="my-svg"> -->
-			<svg viewBox="0 0 {width} {height}" bind:this={svg}>
-				<g class="gridlines" transform="translate({usableArea}, 0)" bind:this={xAxisGridlines} />
-				<g
-					class="gridlines"
-					transform="translate({usableArea.left}, 0)"
-					bind:this={yAxisGridlines}
-				/>
+		<svg viewBox="0 0 {width} {height}" bind:this={svg}>
+			<g class="gridlines" transform="translate({usableArea}, 0)" bind:this={xAxisGridlines} />
+			<g class="gridlines" transform="translate({usableArea.left}, 0)" bind:this={yAxisGridlines} />
 
-				<g transform="translate(0, {usableArea.bottom})" bind:this={xAxis} />
-				<g transform="translate({usableArea.left}, 0)" bind:this={yAxis} />
+			<g transform="translate(0, {usableArea.bottom})" bind:this={xAxis} />
+			<g transform="translate({usableArea.left}, 0)" bind:this={yAxis} />
 
-				<!-- <path
+			<!-- <path
 			d={lineGenerator(work_plot_sorted)}
 			style="fill: none; stroke: orange; stroke-width: 3;"
 		/> -->
 
-				<g class="dots">
-					{#each work_plot as c, idx}
-						<!-- <g transform="translate({xScale(c.x)}, {yScale(c.y) - 12})">
+			<g class="dots">
+				{#each work_plot as c, idx}
+					<!-- <g transform="translate({xScale(c.x)}, {yScale(c.y) - 12})">
 					<text dominant-baseline="middle" text-anchor="middle" class="label"
 						>{idx} [{Math.round(xScale(c.x))}, {Math.round(yScale(c.y))}]: {Math.round(c.y * 100) /
 							100}</text
 					>
 				</g> -->
 
-						<line
-							x1={xScale(c.x)}
-							y1={yScale(c.y) + rScale(c.r)}
-							x2={xScale(c.x)}
-							y2={yScale(24)}
-							stroke="orange"
-							stroke-width={1}
-						/>
+					<line
+						x1={xScale(c.x)}
+						y1={yScale(c.y) + rScale(c.r)}
+						x2={xScale(c.x)}
+						y2={yScale(24)}
+						stroke="orange"
+						stroke-width={1}
+					/>
 
-						<!-- svelte-ignore a11y_no_static_element_interactions -->
-						<g transform="translate({xScale(c.x)}, {yScale(c.y) - 0})">
-							<text dominant-baseline="middle" text-anchor="middle" class="label no-select">
-								{c.r}
-							</text>
-						</g>
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<g transform="translate({xScale(c.x)}, {yScale(c.y) - 0})">
+						<text dominant-baseline="middle" text-anchor="middle" class="label no-select">
+							{c.r}
+						</text>
+					</g>
 
-						<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-						<!-- svelte-ignore a11y_role_supports_aria_props -->
-						<circle
-							cx={xScale(c.x)}
-							cy={yScale(c.y)}
-							r={rScale(c.r)}
-							fill="steelblue"
-							on:mouseenter={(evt) => dotInteraction(evt, idx)}
-							on:mouseleave={(evt) => dotInteraction(evt, idx)}
-							on:mousefocus={(evt) => dotInteraction(evt, idx)}
-							on:mouseblur={(evt) => dotInteraction(evt, idx)}
-							class:selected={isCommitSelected(c)}
-							tabindex="0"
-							aria-describedby="commit-tooltip"
-							role="tooltip"
-							aria-haspopup="true"
-						/>
-					{/each}
-				</g>
-			</svg>
+					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+					<!-- svelte-ignore a11y_role_supports_aria_props -->
+					<circle
+						cx={xScale(c.x)}
+						cy={yScale(c.y)}
+						r={rScale(c.r)}
+						fill="steelblue"
+						on:mouseenter={(evt) => dotInteraction(evt, idx)}
+						on:mouseleave={(evt) => dotInteraction(evt, idx)}
+						on:mousefocus={(evt) => dotInteraction(evt, idx)}
+						on:mouseblur={(evt) => dotInteraction(evt, idx)}
+						class:selected={isCommitSelected(c)}
+						tabindex="0"
+						aria-describedby="commit-tooltip"
+						role="tooltip"
+						aria-haspopup="true"
+					/>
+				{/each}
+			</g>
+		</svg>
 		<!-- </div> -->
 	</div>
 </div>
