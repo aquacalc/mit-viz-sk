@@ -141,8 +141,15 @@
 		<!-- <circle cx={0} cy={0} r={50} fill="red" /> -->
 		<!-- <path d="M -50 0 A 50 50 0 0 1 50 0 A 50 50 0 0 1 -50 0" fill="blue" /> -->
 
-		<text x={10} y={5} text-anchor="middle" fill="#888" font-size={'0.85rem'}
-			>{selectedIndex === -1 ? '' : myPieData[selectedIndex]?.label}</text
+		<text 
+			x={10} 
+			y={5} 
+			text-anchor="middle" 
+			fill={myFills(selectedIndex)}
+			font-size={'0.85rem'}
+			>
+			{selectedIndex === -1 ? '' : myPieData[selectedIndex]?.label}
+			</text
 		>
 	</svg>
 
@@ -150,7 +157,10 @@
 		<!-- {#each myPieData.sort((a, b) => b.label - a.label) as { value, label }, idx} -->
 		<!-- <li style="color: {myFills(myPieData.length - 1 - idx)}"> -->
 		{#each myPieData as { value, label }, idx}
-			<li style="color: {myFills(idx)}" class:selected={selectedIndex === idx}>
+			<li 
+				style="color: {myFills(idx)}" 
+				class:selected={selectedIndex === idx}
+				>
 				<span
 					class="swatch"
 					class:selected={selectedIndex === idx}
@@ -215,15 +225,18 @@
 
 	.selected {
 		--color: oklch(60% 45% 0) !important;
-		color: oklch(60% 45% 0) !important;
+		/* comment out to keep selected Pie slice color */
+		/* color: oklch(60% 45% 0) !important; */
 		opacity: 1;
 
-		&:is(path) {
+		/* comment out to keep selected Pie slice color */
+		/* &:is(path) {
 			fill: var(--color);
-		}
-
+		} */
+		
 		&:is(span) {
-			background-color: oklch(60% 45% 0) !important;
+			/* comment out to keep selected Pie slice color */
+			/* background-color: oklch(60% 45% 0) !important; */
 			border: 1px solid #aaa;
 			font-weight: 600;
 			opacity: 100%;

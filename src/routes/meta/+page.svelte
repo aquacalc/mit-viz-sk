@@ -57,7 +57,7 @@
 					hourFrac: datetime.getHours() + datetime.getMinutes() / 60,
 					totalLines: lines.length,
 					// Add breakdown of file types to decorate brushed <circle>s
-					// when click/expand a slice of Pie.svelte
+					// when hover/click-expand a slice of Pie.svelte
 					fileTypes: d3
 						.rollups(
 							lines,
@@ -67,7 +67,10 @@
 						.reduce((accumulator, [key, value]) => {
 							accumulator[key] = value;
 							return accumulator;
-						}, {})
+						}, {}),
+					// toggle to true when brushed
+					// (when/where toggle to false)
+					brushed: false
 				};
 
 				// number of lines modified by this commit
@@ -384,21 +387,18 @@
 	let selectedCommitTypes;
 	let selectedCommits;
 
-	// [NB] Beautiful logic
+	// *** [NB] Beautiful logic *** //
 	$: selectedCommits = brushSelection ? commits.filter(isCommitSelected) : [];
 	$: hasSelection = brushSelection && selectedCommits.length > 0;
 
 	$: console.log(`***** selectedCommits: `, selectedCommits);
 
-	$: console.log(
-		`+++++ `,
-		selectedCommits?.map((x) => console.log(x))
-	);
+	// $: console.log(
+	// 	`+++++ `,
+	// 	selectedCommits?.map((x) => console.log(x))
+	// );
 	// File types ∆d in brushed commits
 	$: {
-		console.log(`00000 selectedCommits `, selectedCommits);
-
-		// NOT ITERABLE BECAUSE IT'S...an object??!
 		selectedCommitTypes = selectedCommits.map((x) =>
 			d3.rollups(
 				x.lines,
@@ -406,7 +406,6 @@
 				(d) => d.type
 			)
 		);
-		console.log(`11111`);
 	}
 
 	$: resultArray3 = d3.rollups(
@@ -445,6 +444,15 @@
 		let y = yScale(commit.hourFrac);
 
 		let brushTest = x >= min.x && x <= max.x && y >= min.y && y <= max.y;
+
+		// ***** ***** ***** ***** //
+		if (brushTest) {
+			// [NEW] TOGGLE 'brushed' in commit to TRUE
+			commit.brushed = true;
+		} else {
+			commit.brushed = false;
+		}
+		// ***** ***** ***** ***** //
 
 		return brushTest;
 	};
@@ -587,7 +595,12 @@
 					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					<g transform="translate({xScale(c.x)}, {yScale(c.y) - 0})">
 						<text dominant-baseline="middle" text-anchor="middle" class="label no-select">
-							{c.r}
+							{c?.brushed ? selectedType : ''} {c?.brushed ? c?.fileTypes[selectedType] : ''}
+							<!-- {idx} {selectedCommits.length} {selectedCommits[idx]?.fileTypes[selectedType]} -->
+							<!-- {idx}: brushed? {c?.brushed} -->
+							<!-- {idx}: {c?.id === selectedCommits[0]?.id} -->
+							<!-- {idx}: {c[idx]?.fileTypes[selectedType]} -->
+							<!-- {c.r} - {idx}: {selectedCommits[idx]?.fileTypes[selectedType]} -->
 						</text>
 					</g>
 
