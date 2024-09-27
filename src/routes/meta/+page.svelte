@@ -543,9 +543,6 @@
 			</p>
 
 			{#if myPieData.length > 0}
-				<!-- <p>
-					| {selectedType} |
-				</p> -->
 				<Pie id="pie" {myPieData} bind:selectedIndex={selectedTypeIndex} />
 			{:else}
 				<p>

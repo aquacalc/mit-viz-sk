@@ -5,7 +5,7 @@
 	export let selectedIndex = -1;
 	export let showSlider = false;
 
-	$: console.log(`myPieData = `, myPieData);
+	// $: console.log(`myPieData = `, myPieData);
 
 	// let { myPieData, query = '' } = $props();
 
@@ -33,7 +33,7 @@
 	$: arcsArray = myPieData.map((a) => {
 		endAngle = startAngle + (a.value / tot) * 2 * Math.PI;
 
-		console.log(`${startAngle} + (${a.value} / ${tot}) * 2 pi = ${endAngle}`);
+		// console.log(`${startAngle} + (${a.value} / ${tot}) * 2 pi = ${endAngle}`);
 
 		let arcData = {
 			startAngle,
@@ -59,10 +59,20 @@
 
 		if (!e.key || e.key === 'Enter') {
 			selectedIndex = selectedIndex === idx ? -1 : idx;
-			// selectedIndex = idx;
-
 			// console.log(`PIE LABEL: `, myPieData[selectedIndex].label)
 		}
+	};
+
+	const overSlice = (idx, e) => {
+		selectedIndex = idx;
+
+		console.log(`OVER SLICE ${selectedIndex}!!`, e);
+	};
+
+	const leaveSlice = (idx, e) => {
+		// selectedIndex = -1;
+		selectedIndex = null;
+		console.log(`${idx}: LEAVE SLICE ${selectedIndex}!!`, e);
 	};
 
 	// ************** //
@@ -111,6 +121,8 @@
 					fill={myFills(idx)}
 					class:selected={selectedIndex === idx}
 					on:click={(e) => toggleWedge(idx, e)}
+					on:mouseenter={(e) => overSlice(idx, e)}
+					on:mouseout={(e) => leaveSlice(idx, e)}
 					tabindex="0"
 					role="button"
 					aria-label={`Slice ${idx} of pie chart.`}
@@ -128,9 +140,10 @@
 		<!-- <path d={arc} fill={myEndAngle > 3.14 || myEndAngle < -3.14 ? 'red' : 'green'} /> -->
 		<!-- <circle cx={0} cy={0} r={50} fill="red" /> -->
 		<!-- <path d="M -50 0 A 50 50 0 0 1 50 0 A 50 50 0 0 1 -50 0" fill="blue" /> -->
-	
-		<text x={10} y={5} text-anchor='middle' font-size={'0.85rem'}>{myPieData[selectedIndex]?.label}</text>
-	
+
+		<text x={10} y={5} text-anchor="middle" fill="#888" font-size={'0.85rem'}
+			>{selectedIndex === -1 ? '' : myPieData[selectedIndex]?.label}</text
+		>
 	</svg>
 
 	<ul class="legend">
@@ -148,7 +161,6 @@
 			</li>
 		{/each}
 	</ul>
-
 </div>
 
 <style>
@@ -193,7 +205,8 @@
 		--mid-angle: calc(var(--start-angle) + var(--angle) / 2);
 
 		&.selected {
-			transform: rotate(var(--mid-angle)) translateY(-6px) scale(1.1)
+			/* transform: rotate(var(--mid-angle)) translateY(-6px) scale(1.1) */
+			transform: rotate(var(--mid-angle)) translateY(-0.0px) scale(1.05)
 				rotate(calc(-1 * var(--mid-angle)));
 		}
 
