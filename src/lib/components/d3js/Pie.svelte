@@ -25,7 +25,7 @@
 	// const tot = myPieData.reduce((sum, next) => sum + next, 0);
 	$: tot = myPieData.reduce((sum, next) => sum + next.value, 0);
 
-	$: console.log(`TOT = ${tot}`);
+	// $: console.log(`TOT = ${tot}`);
 
 	let startAngle = 0;
 	let endAngle = 0;
@@ -45,7 +45,7 @@
 		return arcData;
 	});
 
-	$: console.log(`ARC array: `, arcsArray);
+	// $: console.log(`ARC array: `, arcsArray);
 
 	$: arcsGenerator = arcsArray.map((arc) => arcGenerator(arc));
 
@@ -60,6 +60,8 @@
 		if (!e.key || e.key === 'Enter') {
 			selectedIndex = selectedIndex === idx ? -1 : idx;
 			// selectedIndex = idx;
+
+			// console.log(`PIE LABEL: `, myPieData[selectedIndex].label)
 		}
 	};
 
@@ -126,6 +128,9 @@
 		<!-- <path d={arc} fill={myEndAngle > 3.14 || myEndAngle < -3.14 ? 'red' : 'green'} /> -->
 		<!-- <circle cx={0} cy={0} r={50} fill="red" /> -->
 		<!-- <path d="M -50 0 A 50 50 0 0 1 50 0 A 50 50 0 0 1 -50 0" fill="blue" /> -->
+	
+		<text x={10} y={5} text-anchor='middle' font-size={'0.85rem'}>{myPieData[selectedIndex]?.label}</text>
+	
 	</svg>
 
 	<ul class="legend">
@@ -143,6 +148,7 @@
 			</li>
 		{/each}
 	</ul>
+
 </div>
 
 <style>
