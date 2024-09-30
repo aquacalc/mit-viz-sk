@@ -419,7 +419,8 @@
 
 	$: myPieData = resultArray3.map(([label, value]) => ({ label, value }));
 
-	// $: console.log(`resultArray3 -- `, resultArray3);
+	$: console.log(`resultArray3 -- `, resultArray3);
+	// $: console.log(`resultArray3 -- `, resultArray3.sort((a, b) => a.label - b.label));
 	// $: console.log(`myPieData -- `, myPieData);
 	// .sort((a, b) => a.label - b.label);
 
@@ -483,17 +484,17 @@
 		// --- MUST ADD ID to each array element of selectedCommitTypes array
 		// --- OR...add this info to commit in onMount()...?
 
-		console.log(`++ selectedCommitTypes ++ `, selectedCommitTypes);
-		console.log(`selectedType: `, selectedType);
+		// console.log(`++ selectedCommitTypes ++ `, selectedCommitTypes);
+		console.log(`SELECTED TYPE: `, selectedType);
 
 		// Get number of this file type in each brushed <circle>
 		// console.log(`commits: `, commits);
 
-		console.log(`selectedCommits: `, selectedCommits);
-		console.log(
-			`selectedCommits[0]?.fileTypes[${selectedType}], ${selectedCommits[0]?.id}: `,
-			selectedCommits[0]?.fileTypes[selectedType]
-		);
+		// console.log(`selectedCommits: `, selectedCommits);
+		// console.log(
+		// 	`selectedCommits[0]?.fileTypes[${selectedType}], ${selectedCommits[0]?.id}: `,
+		// 	selectedCommits[0]?.fileTypes[selectedType]
+		// );
 		// console.log(`resultArray3: `, resultArray3);
 		console.log(` --- `);
 		console.log(`  `);

@@ -141,8 +141,13 @@
 		<li>
 			<a class={currentPage === '/projects' ? 'current' : null} href="/projects">Projects</a>
 		</li>
-		<li>
+		<!-- <li>
 			<a class={currentPage === '/meta' ? 'current' : null} href="/meta">Meta Data</a>
+		</li> -->
+		<li>
+			<a class={currentPage === '/meta-scrolly' ? 'current' : null} href="/meta-scrolly"
+				>Meta Scrolly</a
+			>
 		</li>
 		<li>
 			<a class={currentPage === '/contact' ? 'current' : null} href="/contact"> Contact </a>
